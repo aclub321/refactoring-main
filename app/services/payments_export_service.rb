@@ -15,31 +15,37 @@ class PaymentsExportService
       update_contract(@exported_at)
 
       create_csv_files
-      save_export_log
     end
+
     @files
   end
 
   private
 
   def update_data_for_payment
-    @payments.each do |p|
-      p.update(exported_at: @exported_at)
-    end
+    @payments.in_batches.update_all(exported_at: @exported_at)
   end
 
   def update_contract(last_export)
-    @payments.each do |p|
-      p.contract.update(last_export: last_export)
-    end
+    Contract.where(payments: @payments)
+            .in_batches
+            .update_all(last_export: last_export)
   end
 
   def create_csv_files
+    @files = []
+
     col_sep = @risk_carrier == "Company_1" ? ";" : "|"
 
-    @files = csv_data(col_sep).map.with_index(1).map do |csv, i|
-      File.open(save_path(i), "wb") { |f| f << csv }
+    @payments.includes(:agent).in_batches(of: rows_limit).map.with_index(1) do |slice, i|
+      csv_data = generate_csv_data(col_sep, slice)
+
+      @files << File.open(save_path(i), "wb") { |f| f << csv_data }
+
+      save_export_log(i)
     end
+
+    @files
   end
 
   def save_path(part)
@@ -50,13 +56,11 @@ class PaymentsExportService
     "#{@risk_carrier}_payment_#{@export_type}_#{@exported_at.to_i}_part#{part}.csv"
   end
 
-  def csv_data(col_sep)
-    @payments.each_slice(rows_limit).map do |slice|
-      CSV.generate(col_sep: col_sep) do |csv|
-        csv << ["amount", "agent_id", "created_at"]
-        slice.each do |payment|
-          csv << generate_export_csv(payment) if !payment.processed?
-        end
+  def generate_csv_data(col_sep, slice)
+    CSV.generate(col_sep: col_sep) do |csv|
+      csv << ["amount", "agent_id", "created_at"]
+      slice.unprocessed.each do |payment|
+        csv << generate_export_csv(payment)
       end
     end
   end
@@ -69,13 +73,11 @@ class PaymentsExportService
     @risk_carrier == "Company_1" ? 250 : 2500
   end
 
-  def save_export_log
-    1.upto(@payments.each_slice(rows_limit).count) do |i|
-      PaymentExportLog.create(
-        agent_id: @agent.id,
-        file_name: csv_file_name(i),
-        exported_at: Time.now
-      )
-    end
+  def save_export_log(part)
+    PaymentExportLog.create(
+      agent_id: @agent.id,
+      file_name: csv_file_name(part),
+      exported_at: Time.now
+    )
   end
 end
