@@ -15,4 +15,5 @@ group :development, :test do
   gem 'faker'
   gem 'rspec-rails', '~> 6.0.0.rc1'
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
+  gem "factory_bot_rails"
 end

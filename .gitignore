@@ -30,3 +30,7 @@
 
 # Mac filesystem
 .DS_Store
+
+tags
+*.swp
+*.swo
