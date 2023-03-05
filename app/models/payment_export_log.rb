@@ -1,0 +1,2 @@
+class PaymentExportLog < ApplicationRecord
+end
