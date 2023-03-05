@@ -11,9 +11,14 @@ gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
+
+group :test do
+  gem "factory_bot_rails"
+  gem 'timecop'
+end
+
 group :development, :test do
   gem 'faker'
   gem 'rspec-rails', '~> 6.0.0.rc1'
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
-  gem "factory_bot_rails"
 end

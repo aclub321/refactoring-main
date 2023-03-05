@@ -20,6 +20,8 @@ class PaymentsExportService
     @files
   end
 
+  private
+
   def update_data_for_payment
     @payments.each do |p|
       p.update(exported_at: @exported_at)

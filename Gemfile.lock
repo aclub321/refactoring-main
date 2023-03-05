@@ -177,6 +177,7 @@ GEM
     rspec-support (3.11.0)
     strscan (3.0.3)
     thor (1.2.1)
+    timecop (0.9.6)
     timeout (0.3.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
@@ -198,6 +199,7 @@ DEPENDENCIES
   puma (~> 5.0)
   rails (~> 7.0.2, >= 7.0.2.3)
   rspec-rails (~> 6.0.0.rc1)
+  timecop
   tzinfo-data
 
 RUBY VERSION
